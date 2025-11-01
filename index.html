@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>تحلیل جریان پول هوشمند | Iran OI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="header container">
+            <div class="branding">
+                <img src="logo.png" alt="Iran OI Logo" class="branding-logo" onerror="this.style.display='none'">
+                <div class="branding-text">
+                    <h1>📊 تحلیل جریان پول هوشمند</h1>
+                    <p class="subtitle">مقایسهٔ Open Interest در نمای کلی بازار و نماد منتخب</p>
+                    <div class="update-chip">
+                        <span>آخرین بروزرسانی:</span>
+                        <strong id="marketLastUpdate">نامشخص</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class_tn="stats-grid">
+                <div class="stat-card">
+                    <p class="stat-label">OI خرید</p>
+                    <p class="stat-value" id="marketBuyValue">0.000</p>
+                    <p class="stat-change" id="marketBuyChange">—</p>
+                    <p class="stat-note">مقدار مثبت = فشار فروش، مقدار منفی = فشار خرید</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">OI فروش</p>
+                    <p class="stat-value negative" id="marketSellValue">0.000</p>
+                    <p class="stat-change" id="marketSellChange">—</p>
+                    <p class="stat-note">مقدار مثبت = عرضهٔ حقیقی کم، مقدار منفی = فشار فروش حقیقی</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">خالص OI</p>
+                    <p class="stat-value" id="marketNetValue">0.000</p>
+                    <p class="stat-change" id="marketNetChange">—</p>
+                    <p class="stat-note">مقدار منفی = فشار خرید غالب، مقدار مثبت = فشار فروش</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">روند کلی بازار</p>
+                    <p class="stat-trend" id="marketTrendLabel">منتظر داده...</p>
+                    <p class="stat-meta">
+                        بر اساس <span id="marketWindow">۰</span> روز اخیر
+                    </p>
+                    <p class="stat-meta">
+                        نمادهای عبور کرده از فیلتر: <span id="marketFiltered">۰</span>
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">میانگین حجم وزنی (۷ روزه)</p>
+                    <p class="stat-value" id="marketVolumeValue">0</p>
+                    <p class="stat-change" id="marketVolumeChange">—</p>
+                    <p class="stat-note">مجموع حجم نمادهای دارای جریان موثر (ریال)</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">پوشش داده</p>
+                    <p class="stat-value" id="marketSymbolCount">۰ نماد</p>
+                    <p class="stat-meta">
+                        تاریخ‌های معتبر: <span id="marketDateCount">۰</span>
+                    </p>
+                    <p class="stat-note">داده‌ها پس از فیلتر نسبت‌حجم تجمیع شده‌اند.</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="main container">
+            <nav class="tab-nav" aria-label="صفحات تحلیل">
+                <button class="tab-button is-active" type="button" data-tab-button="market" aria-selected="true">نمودار کل بازار</button>
+                <button class="tab-button" type="button" data-tab-button="symbol" aria-selected="false">نمادها و جست‌وجو</button>
+                <button class="tab-button" type="button" data-tab-button="top" aria-selected="false">۱۰ نماد پرحجم</button>
+            </nav>
+
+            <section class="tab-panel is-active" data-tab-panel="market">
+                <header class="panel-header">
+                    <h2>OI کل بازار بورس ایران</h2>
+                    <p class="panel-subtitle">جریان پول هوشمند - اختصاصی از کانال چشم‌انداز بازار</p>
+                </header>
+
+                <div class="chart-card">
+                    <canvas id="marketChart" aria-label="نمودار میله‌ای جریان پول هوشمند کل بازار"></canvas>
+                </div>
+                <p class="chart-footnote">
+                    رنگ میله‌ها بر اساس جهت جریان (سبز: ورود پول، قرمز: خروج پول) تعیین شده است.
+                </p>
+            </section>
+
+            <section class="tab-panel" data-tab-panel="symbol">
+                <header class="panel-header">
+                    <h2>تحلیل نمادها</h2>
+                    <p class="panel-subtitle">جست‌وجوی نماد و بررسی جزییات با نمودار میله‌ای و میانگین متحرک</p>
+                </header>
+
+                <div class="symbol-controls">
+                    <label class="search-field">
+                        <input id="symbolSearchInput" type="search" placeholder="جست‌وجوی نماد (مثلاً فولاد)" autocomplete="off" spellcheck="false">
+                        <span class="search-icon" aria-hidden="true">🔍</span>
+                    </label>
+                    <div class="symbol-stats">
+                        <span>تعداد کل: <strong id="symbolTotalCount">۰</strong></span>
+                        <span>نمایش داده شده: <strong id="symbolDisplayedCount">۰</strong></span>
+                    </div>
+                    <div class="ma-chip-group" role="group" aria-label="انتخاب دوره میانگین متحرک">
+                        <button type="button" class="ma-chip is-active" data-ma="2">۲ روزه</button>
+                        <button type="button" class="ma-chip" data-ma="3">۳ روزه</button>
+                        <button type="button" class="ma-chip" data-ma="5">۵ روزه</button>
+                        <button type="button" class="ma-chip" data-ma="7">۷ روزه</button>
+                    </div>
+                </div>
+
+                <div class="symbol-layout">
+                    <div class="table-card">
+                        <div class="table-wrapper">
+                            <table class="data-table" aria-describedby="symbolTableCaption">
+                                <caption id="symbolTableCaption">جدول نمادها و شاخص‌های مرتبط با جریان پول</caption>
+                                <thead>
+                                    <tr>
+                                        <th>نماد</th>
+                                        <th>P/M</th>
+                                        <th>% اختلاف سقف اول</th>
+                                        <th>ریسک</th>
+                                        <th>حجم ۷ روزه</th>
+                                        <th>حجم ۲۱ روزه</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="symbolTableBody">
+                                    <tr>
+                                        <td colspan="6">در حال بارگذاری داده‌ها...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="symbol-details">
+                        <div class="chart-card symbol-chart-card">
+                            <div class="chart-header">
+                                <h3 id="symbolChartTitle">نمودار OI نماد منتخب</h3>
+                                <span id="symbolChartStatus">ابتدا نماد را از جدول انتخاب کنید</span>
+                            </div>
+                            <canvas id="symbolChart" aria-label="نمودار OI نماد منتخب"></canvas>
+                        </div>
+
+                        <div class="summary-card">
+                            <h3>خلاصهٔ نماد انتخابی</h3>
+                            <div class="summary-grid">
+                                <div>
+                                    <span>میانگین خالص OI:</span>
+                                    <strong id="symbolNetAvg">0.000</strong>
+                                </div>
+                                <div>
+                                    <span>میانگین OI خریداران:</span>
+                                    <strong id="symbolBuyAvg">0.000</strong>
+                                </div>
+                                <div>
+                                    <span>میانگین OI فروشندگان:</span>
+                                    <strong id="symbolSellAvg">0.000</strong>
+                                </div>
+                                <div>
+                                    <span>میانگین حجم ۷ روزه:</span>
+                                    <strong id="symbolVolume7Avg">0</strong>
+                                </div>
+                                <div>
+                                    <span>میانگین حجم ۲۱ روزه:</span>
+                                    <strong id="symbolVolume21Avg">0</strong>
+                                </div>
+                                <div>
+                                    <span>آخرین تاریخ در دسترس:</span>
+                                    <strong id="symbolLatestDate">—</strong>
+                                </div>
+                            </div>
+                            <div class="details-list" id="symbolDetailsList">
+                                <p>اطلاعات تکمیلی اینجا نمایش داده می‌شود.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" data-tab-panel="top">
+                <header class="panel-header">
+                    <h2>۱۰ نماد پرحجم</h2>
+                    <p class="panel-subtitle">
+                        انتخاب بر اساس حجم موثر ۷ روزه و وضعیت جریان خالص در آخرین تاریخ:
+                        <span id="topSymbolsDate">نامشخص</span>
+                    </p>
+                </header>
+
+                <div class="chart-card">
+                    <canvas id="topVolumeChart" aria-label="نمودار میله‌ای ۱۰ نماد پرحجم"></canvas>
+                </div>
+                <p class="chart-footnote">
+                    رنگ سبز نشان‌دهندهٔ ورود پول هوشمند، و رنگ قرمز بیانگر خروج پول است.
+                </p>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content container">
+                <p>داده‌ها بر اساس جریان پول حقیقی و نسبت خرید/فروش استخراج شده‌اند.</p>
+                <p>فیلتر حجم باعث می‌شود تنها نمادهای دارای حجم موثر وارد محاسبات شوند.</p>
+                <p>
+                    <a href="https://iran-oi.github.io/" target="_blank" rel="noopener noreferrer">Iran OI Project</a> |
+                    <a href="mailto:info@iran-oi.ir">info@iran-oi.ir</a>
+                </p>
+                <p>© 1404 Iran OI — تمامی حقوق محفوظ است.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" integrity="sha384-5Y1jOphC5zudJc6x1Mc3oZjfgFDTVBsgm1zWcV7KCNzQSCWlyXhUt9UvNvQ3F4YG" crossorigin="anonymous"></script>
+    <script src="app.js"></script>
+</body>
+</html>
